@@ -1,6 +1,6 @@
 {
   "name": "reuser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple reuse pool of one. Makes automatic cleanup of a single shared resource (think db connection) easy.",
   "main": "index.js",
   "scripts": {

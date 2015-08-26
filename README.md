@@ -21,7 +21,7 @@ function setupDB(cb) {
 
 function tearownDB(cb) {
   // down teardown here
-  cb();d
+  cb();
 }
 
 // Create a reuser function

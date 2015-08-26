@@ -1,0 +1,22 @@
+{
+  "trailing": true,
+  "unused": true,
+  "boss": true,
+  "laxcomma": true,
+  "eqeqeq" : true,
+  "indent": 2,
+  "latedef": "nofunc",
+  "noarg": true,
+  "noempty": true,
+  "quotmark": "single",
+  "undef": true,
+  "maxdepth": 4,
+  "maxlen": 100,
+  "node": true,
+  "globals": {
+    "describe": false,
+    "it": false,
+    "before": false,
+    "beforeEach": false
+  }
+}

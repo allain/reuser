@@ -1,0 +1,25 @@
+{
+  "name": "reuser",
+  "version": "1.0.0",
+  "description": "A simple reuse pool of one. Makes automatic cleanup of a single shared resource (think db connection) easy.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js"
+  },
+  "files": [ "index.js" ],
+  "repository": {
+    "type": "git",
+    "url": "http://www.github.com/allain/reuser"
+  },
+  "keywords": [
+    "reuse"
+  ],
+  "author": "Allain Lalonde <allain.lalonde@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "tape": "^4.2.0"
+  },
+  "dependencies": {
+    "bluebird": "^2.9.34"
+  }
+}

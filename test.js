@@ -16,7 +16,9 @@ test('supports simple lifecycle', function(t) {
 
   use(function(res) {
     t.equal(res, resource, 'passes in resource by ref');
-  }).then(function() {
+    return 'result';
+  }).then(function(result) {
+    t.equal(result, 'result');
     t.equal(setupCount, 1);
     t.equal(tearDownCount, 1);
     t.end();
@@ -24,7 +26,7 @@ test('supports simple lifecycle', function(t) {
 });
 
 test('teardown is optional', function(t) {
-  var use = reuser(Date.now);
+  var use = reuser(Math.random);
 
   use(function(time) {
     t.ok(time);
@@ -81,30 +83,31 @@ test('actually reuses resource in nested uses', function(t) {
 });
 
 test('creates a new instance when all uses are finished', function(t) {
-  var use = reuser(function() {
-    return Date.now();
-  });
+  var use = reuser(Math.random);
 
-  var res;
+  var res1;
 
-  use(function(res1) {
-    res = res1;
+  use(function(res) {
+    res1 = res;
   }).then(function() {
     use(function(res2) {
-      t.notEqual(res, res2);
+      t.notEqual(res2, res1);
       t.end();
     });
   });
 });
 
 test('supports delaying the teardown', function(t) {
-  var use = reuser(Date.now, {
+  var use = reuser(Math.random, {
     teardownDelay: 150
   });
 
   var res1;
   use(function(r1) {
     res1 = r1;
+    return 'result';
+  }).then(function(result) {
+    t.equal(result, 'result');
   });
 
   setTimeout(function() {

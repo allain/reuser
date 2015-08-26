@@ -30,14 +30,14 @@ var useDb = reuser(setupDB, teardownDB);
 useDb(function(db, cb) {
   // Do something with db
   cb();
-});
+})
 
 useDb(function(db, cb) {
   // Do somethng with db
   // ...
   useDb(function(db, cb) {
     // Do something with same db here
-    cb();
+    cb(null, 'result');
   }, cb);
 });
 
@@ -62,6 +62,9 @@ var useDb = reuser(setupDB, teardownDB);
 
 useDb(function(db) {
   // Do something with db and return a Promise if the action is asynchronous
+  return Promise.resolve('result');
+}).then(function(result) {
+  // .. use result here
 });
 ```
 

@@ -38,16 +38,27 @@ function reuser(setup, teardown, options) {
       fn = Promise.promisify(fn);
     }
 
-    return resource.then(fn).then(function() {
-      return Promise.delay(teardownDelay).then(function() {
-        refCount--;
-
-        if (refCount === 0) {
-          return Promise.resolve(teardown()).then(function() {
-            resource = null;
-          });
-        }
-      });
+    return resource.then(fn).then(function(result) {
+      if (teardownDelay) {
+        Promise.delay(teardownDelay).then(deref);
+        return result;
+      } else {
+        return deref().then(function() {
+          return result;
+        });
+      }
     });
   };
+
+  function deref() {
+    refCount--;
+
+    if (refCount === 0) {
+      return Promise.resolve(teardown()).then(function() {
+        resource = null;
+      });
+    } else {
+      return Promise.resolve();
+    }
+  }
 }

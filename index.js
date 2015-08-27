@@ -1,4 +1,5 @@
 var Promise = require('bluebird');
+var timestamp = require('monotonic-timestamp');
 
 module.exports = reuser;
 
@@ -15,10 +16,10 @@ function reuser(setup, teardown, options) {
     options = {};
   }
 
+  var lastUsed = null;
   var teardownDelay = options.teardownDelay || 0;
 
   var resource = null;
-  var refCount = 0;
 
   if (setup.length === 1) {
     setup = Promise.promisify(setup);
@@ -29,10 +30,12 @@ function reuser(setup, teardown, options) {
   }
 
   return function(fn) {
-    if (refCount === 0) {
+    var myTime = timestamp();
+    lastUsed = myTime;
+
+    if (resource === null) {
       resource = Promise.resolve(setup());
     }
-    refCount++;
 
     if (fn.length === 2) {
       fn = Promise.promisify(fn);
@@ -45,17 +48,13 @@ function reuser(setup, teardown, options) {
         deref();
       }
     });
-  };
 
-  function deref() {
-    refCount--;
-
-    if (refCount === 0) {
-      return Promise.resolve(teardown()).then(function() {
-        resource = null;
-      });
-    } else {
-      return Promise.resolve();
+    function deref() {
+      if (lastUsed === myTime) {
+        return Promise.resolve(teardown()).then(function() {
+          resource = null;
+        });
+      }
     }
-  }
+  };
 }

@@ -76,8 +76,8 @@ test('actually reuses resource in nested uses', function(t) {
       t.equal(res2, resource, 'passes in resource by ref');
     });
   }).then(function() {
-    t.equal(setupCount, 1);
-    t.equal(tearDownCount, 1);
+    t.equal(setupCount, 1, 'setup count');
+    t.equal(tearDownCount, 1, 'tear down count');
     t.end();
   });
 });
@@ -122,4 +122,19 @@ test('supports delaying the teardown', function(t) {
       t.end();
     });
   }, 300);
+});
+
+test('failing uses still teardown', function(t) {
+  var tearDownCount = 0;
+  var use = reuser(Math.random, function tearDown() {
+    tearDownCount++;
+  });
+
+  use(function() {
+    throw new Error('deliberate failure');
+  }).catch(function(err) {
+    t.ok(err);
+    t.equal(1, tearDownCount);
+    t.end();
+  });
 });

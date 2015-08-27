@@ -38,14 +38,11 @@ function reuser(setup, teardown, options) {
       fn = Promise.promisify(fn);
     }
 
-    return resource.then(fn).then(function(result) {
+    return resource.then(fn).finally(function() {
       if (teardownDelay) {
         Promise.delay(teardownDelay).then(deref);
-        return result;
       } else {
-        return deref().then(function() {
-          return result;
-        });
+        deref();
       }
     });
   };

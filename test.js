@@ -1,5 +1,6 @@
 var test = require('tape');
 var reuser = require('./index.js');
+var Promise = require('bluebird');
 
 test('supports simple lifecycle', function(t) {
   var setupCount = 0;
@@ -137,4 +138,19 @@ test('failing uses still teardown', function(t) {
     t.equal(1, tearDownCount);
     t.end();
   });
+});
+
+test('does not tear down till returned promise resolves', function(t) {
+  var tearDownCount = 0;
+  var use = reuser(Math.random, function tearDown() {
+    tearDownCount++;
+  });
+
+  use(function() {
+    return Promise.delay(50).then(function() {
+      t.equal(tearDownCount, 0);
+      t.end();
+    });
+  });
+
 });

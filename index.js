@@ -41,20 +41,23 @@ function reuser(setup, teardown, options) {
       fn = Promise.promisify(fn);
     }
 
-    return resource.then(fn).finally(function() {
-      if (teardownDelay) {
-        Promise.delay(teardownDelay).then(deref);
-      } else {
-        deref();
-      }
+    return resource.then(fn).then(function(result) {
+      return Promise.delay(result, teardownDelay || 0).then(deref);
+    }, function(err) {
+      return Promise.delay(teardownDelay || 0).then(deref).then(function() {
+        throw err;
+      });
     });
 
-    function deref() {
+    function deref(value) {
       if (lastUsed === myTime) {
         return Promise.resolve(teardown()).then(function() {
           resource = null;
+          return value;
         });
       }
+
+      return value;
     }
   };
 }

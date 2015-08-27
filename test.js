@@ -152,5 +152,20 @@ test('does not tear down till returned promise resolves', function(t) {
       t.end();
     });
   });
+});
 
+test('delay in teardown does not slow down return of usage', function(t) {
+  var tearDownCount = 0;
+  var use = reuser(Math.random, function tearDown() {
+    tearDownCount++;
+  }, {
+    teardownDelay: 150
+  });
+
+  use(function() {
+    return Date.now();
+  }).then(function(result) {
+    t.ok(Date.now() - result < 10, 'should be almost immediate');
+    t.end();
+  });
 });

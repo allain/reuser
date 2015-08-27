@@ -5,13 +5,11 @@ module.exports = reuser;
 
 function reuser(setup, teardown, options) {
   if (!teardown && !options) {
-    teardown = function() {
-    };
+    teardown = function() {};
     options = {};
   } else if (typeof teardown === 'object') {
     options = teardown;
-    teardown = function() {
-    };
+    teardown = function() {};
   } else {
     options = {};
   }
@@ -42,11 +40,20 @@ function reuser(setup, teardown, options) {
     }
 
     return resource.then(fn).then(function(result) {
-      return Promise.delay(result, teardownDelay || 0).then(deref);
+      if (teardownDelay === 0) {
+        return deref(result);
+      } else {
+        Promise.delay(teardownDelay).then(deref);
+        return result;
+      }
     }, function(err) {
-      return Promise.delay(teardownDelay || 0).then(deref).then(function() {
+      if (teardownDelay === 0) {
+        deref();
         throw err;
-      });
+      } else {
+        Promise.delay(teardownDelay).then(deref);
+        throw err;
+      }
     });
 
     function deref(value) {

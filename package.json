@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "bluebird": "^2.9.34",
+    "get-parameter-names": "^0.2.0",
     "monotonic-timestamp": "0.0.9"
   }
 }

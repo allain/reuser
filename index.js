@@ -1,5 +1,6 @@
 var Promise = require('bluebird');
 var timestamp = require('monotonic-timestamp');
+var getParamNames = require('get-parameter-names');
 
 module.exports = reuser;
 
@@ -23,7 +24,7 @@ function reuser(setup, teardown, options) {
     setup = Promise.promisify(setup);
   }
 
-  if (teardown.length === 1) {
+  if (isCallbacked(teardown)) {
     teardown = Promise.promisify(teardown);
   }
 
@@ -58,7 +59,7 @@ function reuser(setup, teardown, options) {
 
     function deref(value) {
       if (lastUsed === myTime) {
-        return Promise.resolve(teardown()).then(function() {
+        return resource.then(teardown).then(function() {
           resource = null;
           return value;
         });
@@ -67,4 +68,10 @@ function reuser(setup, teardown, options) {
       return value;
     }
   };
+}
+
+function isCallbacked(fn) {
+  var params = getParamNames(fn);
+  var lastParam = params[params.length - 1];
+  return ['cb', 'callback', 'done'].indexOf(lastParam) !== -1;
 }

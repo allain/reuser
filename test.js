@@ -43,7 +43,8 @@ test('supports callbacks in setup and teardown and use', function(t) {
   var use = reuser(function(cb) {
     setupCount++;
     cb(null, resource);
-  }, function(cb) {
+  }, function(res, cb) {
+    t.equal(res, resource, 'teardown should receive resource');
     tearDownCount++;
     cb();
   });
@@ -52,8 +53,8 @@ test('supports callbacks in setup and teardown and use', function(t) {
     t.equal(res, resource, 'passes in resource by ref');
     cb();
   }).then(function() {
-    t.equal(setupCount, 1);
-    t.equal(tearDownCount, 1);
+    t.equal(setupCount, 1, 'setup count should be 1');
+    t.equal(tearDownCount, 1, 'teardown count should be 1');
     t.end();
   });
 });
@@ -97,6 +98,18 @@ test('creates a new instance when all uses are finished', function(t) {
     });
   });
 });
+
+test('supports passing built thing to teardown', function(t) {
+  var use = reuser(Math.random, function(num, cb) {
+    t.equal(typeof num, 'number', 'passes built thing to teardown');
+    t.equal(typeof cb, 'function', 'cb is a function');
+    t.end();
+  });
+
+  use(function(num, cb) {
+    cb(null);
+  });
+})
 
 test('supports delaying the teardown', function(t) {
   var use = reuser(Math.random, {

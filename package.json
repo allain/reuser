@@ -4,7 +4,8 @@
   "description": "A simple reuse pool of one. Makes automatic cleanup of a single shared resource (think db connection) easy.",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js"
+    "test": "tape test.js",
+    "format": "standard-format --write"
   },
   "files": [
     "index.js"
@@ -19,10 +20,12 @@
   "author": "Allain Lalonde <allain.lalonde@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "standard-format": "^2.1.0",
     "tape": "^4.2.0"
   },
   "dependencies": {
-    "bluebird": "^2.9.34",
+    "any-promise": "^1.1.0",
+    "any-promisify": "^1.0.0",
     "get-parameter-names": "^0.2.0",
     "monotonic-timestamp": "0.0.9"
   }

@@ -1,77 +1,66 @@
-var Promise = require('bluebird');
-var timestamp = require('monotonic-timestamp');
-var getParamNames = require('get-parameter-names');
+var Promise = require('any-promise')
+var timestamp = require('monotonic-timestamp')
+var promisify = require('any-promisify')
 
-module.exports = reuser;
-
-function reuser(setup, teardown, options) {
+function reuser (setup, teardown, options) {
   if (!teardown && !options) {
-    teardown = function() {};
-    options = {};
+    teardown = function () {}
+    options = {}
   } else if (typeof teardown === 'object') {
-    options = teardown;
-    teardown = function() {};
+    options = teardown
+    teardown = function () {}
   } else {
-    options = {};
+    options = {}
   }
 
-  var lastUsed = null;
-  var teardownDelay = options.teardownDelay || 0;
+  var lastUsed = null
+  var teardownDelay = options.teardownDelay || 0
 
-  var resource = null;
+  var resource = null
 
-  if (setup.length === 1) {
-    setup = Promise.promisify(setup);
-  }
+  setup = promisify(setup)
+  teardown = promisify(teardown)
 
-  if (isCallbacked(teardown)) {
-    teardown = Promise.promisify(teardown);
-  }
-
-  return function(fn) {
-    var myTime = timestamp();
-    lastUsed = myTime;
+  return function (fn) {
+    var myTime = timestamp()
+    lastUsed = myTime
 
     if (resource === null) {
-      resource = Promise.resolve(setup());
+      resource = Promise.resolve(setup())
     }
 
-    if (fn.length === 2) {
-      fn = Promise.promisify(fn);
+    fn = promisify(fn)
+
+    return resource.then(fn).then(function (result) {
+      return delay(teardownDelay || 0, result).then(deref)
+    }, function (err) {
+      return delay(teardownDelay || 0).then(deref).then(function () {
+        throw err
+      })
+    })
+
+    function deref (value) {
+      if (lastUsed !== myTime)
+        return value
+
+      return resource.then(function (resource) {
+        return teardown(resource)
+      }).then(function () {
+        resource = null
+        return value
+      })
     }
-
-    return resource.then(fn).then(function(result) {
-      if (teardownDelay === 0) {
-        return deref(result);
-      } else {
-        Promise.delay(teardownDelay).then(deref);
-        return result;
-      }
-    }, function(err) {
-      if (teardownDelay === 0) {
-        deref();
-        throw err;
-      } else {
-        Promise.delay(teardownDelay).then(deref);
-        throw err;
-      }
-    });
-
-    function deref(value) {
-      if (lastUsed === myTime) {
-        return resource.then(teardown).then(function() {
-          resource = null;
-          return value;
-        });
-      }
-
-      return value;
-    }
-  };
+  }
 }
 
-function isCallbacked(fn) {
-  var params = getParamNames(fn);
-  var lastParam = params[params.length - 1];
-  return ['cb', 'callback', 'done'].indexOf(lastParam) !== -1;
+function delay (n, result) {
+  return new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve(result)
+    }, n)
+  })
 }
+
+reuser.delay = delay
+
+module.exports = reuser

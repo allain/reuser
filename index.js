@@ -6,10 +6,10 @@ function reuser (setup, teardown, options) {
   if (!teardown && !options) {
     teardown = function () {}
     options = {}
-  } else if (typeof teardown === 'object') {
+  } else if (typeof teardown === 'object' && typeof options === 'undefined') {
     options = teardown
     teardown = function () {}
-  } else {
+  } else if (typeof options === 'undefined') {
     options = {}
   }
 
@@ -32,11 +32,22 @@ function reuser (setup, teardown, options) {
     fn = promisify(fn)
 
     return resource.then(fn).then(function (result) {
-      return delay(teardownDelay || 0, result).then(deref)
+      if (!teardownDelay) {
+        return deref(result)
+      }
+
+      delay(teardownDelay || 0, result).then(deref)
+
+      return result
     }, function (err) {
-      return delay(teardownDelay || 0).then(deref).then(function () {
-        throw err
-      })
+      if (!teardownDelay) {
+        return deref().then(() => {
+          throw err
+        })
+      }
+
+      delay(teardownDelay || 0).then(deref)
+      throw err
     })
 
     function deref (value) {
